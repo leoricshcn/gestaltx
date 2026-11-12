@@ -326,6 +326,7 @@ struct CategoryView: View {
                         Text(L("Keep Current")).tag(0)
                         Text("iPhone 14 Pro · 2556").tag(2556)
                         Text("iPhone 14 Pro Max · 2796").tag(2796)
+                        Text("iPhone Air · 2736").tag(2736)
                         Text("iPhone 16 Pro · 2622").tag(2622)
                         Text("iPhone 16 Pro Max · 2868").tag(2868)
                     }
@@ -399,7 +400,11 @@ struct CategoryView: View {
                             if capability.id == "dynamicIsland" && $0 != .keep { model.subtype = 0 }
                         }
                     )) {
-                        ForEach(PresetChoice.allCases) { Text(L($0.title)).tag($0) }
+                        ForEach(capability.availableChoices) { choice in
+                            let title = capability.id == "siriOnDevice" && choice == .disable
+                                ? "Restore Original" : choice.title
+                            Text(L(title)).tag(choice)
+                        }
                     } label: {
                         HStack(spacing: 6) {
                             Text(L(capability.title))
@@ -409,7 +414,7 @@ struct CategoryView: View {
                             }
                         }
                     }.pickerStyle(.menu)
-                    if capability.requiresEnableConfirmation {
+                    if capability.requiresEnableConfirmation || capability.id == "siriOnDevice" {
                         Text(L(capability.detail)).font(.caption).foregroundStyle(.secondary)
                     }
                     HStack(alignment: .firstTextBaseline) {
