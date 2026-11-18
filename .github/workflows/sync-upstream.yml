@@ -22,10 +22,18 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Fast-forward from upstream and push to fork
+      - name: Merge upstream while keeping fork workflows
         run: |
           git fetch https://github.com/huamidev/GestaltX.git main
+          if git merge-base --is-ancestor FETCH_HEAD HEAD; then
+            echo "Fork already contains upstream main"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git merge --no-edit FETCH_HEAD
+          git merge --no-commit --no-ff FETCH_HEAD
+          # GITHUB_TOKEN cannot update .github/workflows files. Keep this fork's
+          # automation/build workflows while importing the rest of upstream.
+          git restore --source=HEAD --staged --worktree .github/workflows
+          git commit --allow-empty -m "Merge upstream main"
           git push origin HEAD:main
